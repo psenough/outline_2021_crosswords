@@ -14,8 +14,8 @@ Outline 2021 Crosswords Challenge!
 * Used Qxw to handcraft the final version [https://www.quinapalus.com/qxw.html](https://www.quinapalus.com/qxw.html)
 * Exported to HTML and manually edited the Atari Workbench look & feel + text input
 * Wrote, recorded and edited the video presentation script
-* Previewed to Jeenio
-* Added soundtrack
+* Sent preview to Jeenio
+* Added soundtrack and video fixes by Jeenio
 * Submitted to Outline 2021
 * ???
 * Profit!
