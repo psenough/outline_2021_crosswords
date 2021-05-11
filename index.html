@@ -6,6 +6,7 @@
 <title>Outline 2021 Crosswords</title>
 <link rel="icon" href="bzzz2.gif" type="image/gif" />
 <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style type="text/css">
 @font-face {
   font-family: 'AtariFont';
@@ -44,6 +45,55 @@ input:focus{
 margin-left: 1em;
 background-color: #DEDEDE;
 border: 1px solid black;
+}
+
+div.hints{
+float:left;
+overflow-y:scroll;
+height:100%;
+width:50%;
+}
+ 
+@media 
+only screen and (max-width: 760px),
+(min-device-width: 768px) and (max-device-width: 1024px)  {
+
+/* Force table to not be like tables anymore */
+table, thead, tbody, th, td, tr { 
+	display: block; 
+}
+
+td { 
+	/* Behave  like a "row" */
+	border: none;
+	border-bottom: 1px solid #eee; 
+	position: relative;
+}
+
+td:before { 
+	/* Now like a table header */
+	position: absolute;
+	/* Top/left values mimic padding */
+	top: 6px;
+	left: 6px;
+	width: 45%; 
+	padding-right: 10px; 
+	white-space: nowrap;
+}
+
+thead tr { 
+		position: absolute;
+		top: -9999px;
+		left: -9999px;
+	}
+	
+div.hints{
+float:left;
+overflow-y:scroll;
+height:100%;
+width:100%;
+}
+
 }
 </style>
 </head>
@@ -438,12 +488,14 @@ border: 1px solid black;
   Your browser does not support the audio element.
 </audio>
 </div>
-<div style="float:left; overflow-y:scroll;height:100%; width: 50%">
-<table class="maintable"><tr>
+<div class="hints">
+<table class="maintable">
+<thead>
 <td><b>Across</b></td>
 <td>&nbsp;</td>
 <td><b>Down</b></td>
-</tr><tr>
+</thead>
+<tr>
 <td valign="top"><table>
 <tr><td width="0" align="right" valign="top"><b>1</b></td>
 <td valign="top">Splipstream Musician&nbsp;(4)</td></tr>
