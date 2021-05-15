@@ -19,3 +19,6 @@ Outline 2021 Crosswords Challenge!
 * Submitted to Outline 2021
 * ???
 * Profit!
+
+# Hall of Fame of completionists
+1. kb
