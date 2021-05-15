@@ -22,3 +22,5 @@ Outline 2021 Crosswords Challenge!
 
 # Hall of Fame of completionists
 1. kb
+2. gasman
+3. 
