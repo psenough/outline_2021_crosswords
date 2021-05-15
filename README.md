@@ -1,6 +1,10 @@
 # outline_2021_crosswords
 Outline 2021 Crosswords Challenge!
 
+As seen on TV during Outline 2021: [https://www.youtube.com/watch?v=Qh-FjYpmCio](https://www.youtube.com/watch?v=Qh-FjYpmCio)
+
+# History
+
 * Saw Lug00ber's bingo night DJ set [https://www.youtube.com/watch?v=frl8AGmGI10&ab_channel=RevisionDemoparty](https://www.youtube.com/watch?v=frl8AGmGI10&ab_channel=RevisionDemoparty)
 * Had a brilliant idea!
 * Found a crossword filler that works with customizable dictionaries [https://github.com/jsgonsette/Wizium](https://github.com/jsgonsette/Wizium)
