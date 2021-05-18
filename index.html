@@ -9,8 +9,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style type="text/css">
 @font-face {
-  font-family: 'AtariFont';
-  src: url('AtariClassic-gry3.ttf')  format('truetype')
+font-family: 'AtariFont';
+src: url('AtariClassic-gry3.ttf')  format('truetype')
 }
 body {background-color: #00E000; font-family:'AtariFont'}
 div.bk {position:absolute;font-size:0px;border-left:black 0px solid;border-right:black 0px solid;border-top:black 36px solid;border-bottom:black 0px solid;width:36px;height:36px;}
@@ -24,22 +24,22 @@ div.vr {position:absolute;font-size:0px;border-left:black 1px solid;border-right
 div.nu {position:absolute;font-size:8px;font-family:'AtariFont';width:12px;height:12px;z-index:21}
 div.lt {position:absolute;text-align:center;width:36px;font-family:sans-serif}
 input {
-	position:relative;
-	top:-27px;
-	border: 0px;
-	z-index: 20;
-	width: 22px;
-	left: 7px;
-	text-transform:uppercase;
-	font-family:'AtariFont';
-	font-size: 16pt;
-	padding:0px;
-	margin:0px;
-	caret-color: transparent;
-	background-color: #DEDEDE;
+position:relative;
+top:-27px;
+border: 0px;
+z-index: 20;
+width: 22px;
+left: 7px;
+text-transform:uppercase;
+font-family:'AtariFont';
+font-size: 16pt;
+padding:0px;
+margin:0px;
+caret-color: transparent;
+background-color: #DEDEDE;
 }
 input:focus{
-   
+
 }
 .maintable{
 margin-left: 1em;
@@ -53,439 +53,556 @@ overflow-y:scroll;
 height:100%;
 width:50%;
 }
- 
-@media 
+div.hints tr.highlight {
+  background: black;
+  color: #DEDEDE;
+}
+
+@media
 only screen and (max-width: 760px),
 (min-device-width: 768px) and (max-device-width: 1024px)  {
 
 /* Force table to not be like tables anymore */
-table, thead, tbody, th, td, tr { 
-	display: block; 
+table, thead, tbody, th, td, tr {
+display: block;
 }
 
-td { 
-	/* Behave  like a "row" */
-	border: none;
-	border-bottom: 1px solid #eee; 
-	position: relative;
+td {
+/* Behave  like a "row" */
+border: none;
+border-bottom: 1px solid #eee;
+position: relative;
 }
 
-td:before { 
-	/* Now like a table header */
-	position: absolute;
-	/* Top/left values mimic padding */
-	top: 6px;
-	left: 6px;
-	width: 45%; 
-	padding-right: 10px; 
-	white-space: nowrap;
+td:before {
+/* Now like a table header */
+position: absolute;
+/* Top/left values mimic padding */
+top: 6px;
+left: 6px;
+width: 45%;
+padding-right: 10px;
+white-space: nowrap;
 }
 
-thead tr { 
-		position: absolute;
-		top: -9999px;
-		left: -9999px;
-	}
-	
+thead tr {
+position: absolute;
+top: -9999px;
+left: -9999px;
+}
+
 div.hints{
 float:left;
 overflow-y:scroll;
 height:100%;
 width:100%;
 }
-
 }
 </style>
+<script>
+<!--
+function moveFocus( ox, oy, dx, dy )
+{
+  var x = ox;
+  var y = oy;
+  while( true )
+  {
+    x += dx;
+    y += dy;
+    if (x < 0 || x > 14 || y < 0 || y > 16)
+    {
+      return;
+    }
+    
+    var box = document.querySelector("div[data-x='"+x+"'][data-y='"+y+"'] input");
+    if (box)
+    {
+      box.focus();
+      return;
+    }
+  }
+}
+function findHintNum( ox, oy, dir )
+{
+  if (dir == 'across')
+  {
+    dx = -1;
+    dy = 0;
+  }
+  if (dir == 'down')
+  {
+    dx = 0;
+    dy = -1;
+  }
+  var x = ox;
+  var y = oy;
+  while( true )
+  {
+    if (x < 0 || x > 14 || y < 0 || y > 16)
+    {
+      return - 1;
+    }
+    
+    var number = document.querySelector("div[data-x='"+x+"'][data-y='"+y+"'][data-hint]");
+    if (number)
+    {
+      var hint = parseInt( number.getAttribute("data-hint") );
+      if (document.querySelector(".hints tr[data-hint='"+hint+"'][data-hintdir='"+dir+"']"))
+      {
+        return hint;
+      }
+    }
+
+    x += dx;
+    y += dy;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function(event)
+{
+  var inputs = document.querySelectorAll("#grid input");
+  inputs.forEach(function(element){
+    element.onfocus = function(event)
+    {
+      var x = parseInt( event.currentTarget.parentNode.getAttribute("data-x") );
+      var y = parseInt( event.currentTarget.parentNode.getAttribute("data-y") );
+
+      var hints = document.querySelectorAll(".hints tr[data-hint]");
+      hints.forEach(function(element){ element.classList.remove("highlight"); });
+
+      var hint = findHintNum(x,y,'down');
+      if (hint != -1)
+      {
+        hints = document.querySelectorAll(".hints tr[data-hint='"+hint+"'][data-hintdir='down']");
+        hints.forEach(function(element){ element.classList.add("highlight"); });
+      }
+      hint = findHintNum(x,y,'across');
+      if (hint != -1)
+      {
+        hints = document.querySelectorAll(".hints tr[data-hint='"+hint+"'][data-hintdir='across']");
+        hints.forEach(function(element){ element.classList.add("highlight"); });
+      }
+
+    };  
+    element.onkeyup = function(event)
+    {
+      var x = parseInt( event.currentTarget.parentNode.getAttribute("data-x") );
+      var y = parseInt( event.currentTarget.parentNode.getAttribute("data-y") );
+      if (event.key == "ArrowUp")
+      {
+        moveFocus(x,y,0,-1);
+      }
+      if (event.key == "ArrowDown")
+      {
+        moveFocus(x,y,0,1);
+      }
+      if (event.key == "ArrowLeft")
+      {
+        moveFocus(x,y,-1,0);
+      }
+      if (event.key == "ArrowRight")
+      {
+        moveFocus(x,y,1,0);
+      }
+      if (event.key == "Delete")
+      {
+        event.currentTarget.value = "";
+      }
+    };
+  });
+});
+//-->
+</script>
 </head>
 
 <body>
 <div style="float: left">
 <div style="border-width:0px;width:540px;height:613px;position:relative;">
-<div style="border-width:0px;top:0px;left:0px;width:540px;height:613px;position:absolute;">
-<div class="bk" style="left:1px;top:1px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:37px;top:1px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:73px;top:1px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:109px;top:1px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:145px;top:1px;"></div>
-<div class="bk" style="left:181px;top:1px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:217px;top:1px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:253px;top:1px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:289px;top:1px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:325px;top:1px;border-top:0;"></div>
-<div class="bk" style="left:361px;top:1px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:397px;top:1px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:433px;top:1px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:469px;top:1px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:505px;top:1px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:1px;top:37px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:37px;top:37px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:73px;top:37px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:109px;top:37px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:145px;top:37px;"></div>
-<div class="bk" style="left:181px;top:37px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:217px;top:37px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:253px;top:37px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:289px;top:37px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:325px;top:37px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:361px;top:37px;"></div>
-<div class="bk" style="left:397px;top:37px;"></div>
-<div class="bk" style="left:433px;top:37px;"></div>
-<div class="bk" style="left:469px;top:37px;"></div>
-<div class="bk" style="left:505px;top:37px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:1px;top:73px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:37px;top:73px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:73px;top:73px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:109px;top:73px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:145px;top:73px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:181px;top:73px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:217px;top:73px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:253px;top:73px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:289px;top:73px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:325px;top:73px;"></div>
-<div class="bk" style="left:361px;top:73px;"></div>
-<div class="bk" style="left:397px;top:73px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:433px;top:73px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:469px;top:73px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:505px;top:73px;"></div>
-<div class="bk" style="left:1px;top:109px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:37px;top:109px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:73px;top:109px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:109px;top:109px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:145px;top:109px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:181px;top:109px;"></div>
-<div class="bk" style="left:217px;top:109px;"></div>
-<div class="bk" style="left:253px;top:109px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:289px;top:109px;"></div>
-<div class="bk" style="left:325px;top:109px;"></div>
-<div class="bk" style="left:361px;top:109px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:397px;top:109px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:433px;top:109px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:469px;top:109px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:505px;top:109px;"></div>
-<div class="bk" style="left:1px;top:145px;"></div>
-<div class="bk" style="left:37px;top:145px;"></div>
-<div class="bk" style="left:73px;top:145px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:109px;top:145px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:145px;top:145px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:181px;top:145px;"></div>
-<div class="bk" style="left:217px;top:145px;"></div>
-<div class="bk" style="left:253px;top:145px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:289px;top:145px;"></div>
-<div class="bk" style="left:325px;top:145px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:361px;top:145px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:397px;top:145px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:433px;top:145px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:469px;top:145px;"></div>
-<div class="bk" style="left:505px;top:145px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:1px;top:181px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:37px;top:181px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:73px;top:181px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:109px;top:181px;"></div>
-<div class="bk" style="left:145px;top:181px;"></div>
-<div class="bk" style="left:181px;top:181px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:217px;top:181px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:253px;top:181px;"></div>
-<div class="bk" style="left:289px;top:181px;"></div>
-<div class="bk" style="left:325px;top:181px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:361px;top:181px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:397px;top:181px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:433px;top:181px;"></div>
-<div class="bk" style="left:469px;top:181px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:505px;top:181px;"></div>
-<div class="bk" style="left:1px;top:217px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:37px;top:217px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:73px;top:217px;border-top:0;"></div>
-<div class="bk" style="left:109px;top:217px;"></div>
-<div class="bk" style="left:145px;top:217px;"></div>
-<div class="bk" style="left:181px;top:217px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:217px;top:217px;"></div>
-<div class="bk" style="left:253px;top:217px;"></div>
-<div class="bk" style="left:289px;top:217px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:325px;top:217px;"></div>
-<div class="bk" style="left:361px;top:217px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:397px;top:217px;"></div>
-<div class="bk" style="left:433px;top:217px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:469px;top:217px;"></div>
-<div class="bk" style="left:505px;top:217px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:1px;top:253px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:37px;top:253px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:73px;top:253px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:109px;top:253px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:145px;top:253px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:181px;top:253px;"></div>
-<div class="bk" style="left:217px;top:253px;"></div>
-<div class="bk" style="left:253px;top:253px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:289px;top:253px;"></div>
-<div class="bk" style="left:325px;top:253px;"></div>
-<div class="bk" style="left:361px;top:253px;"></div>
-<div class="bk" style="left:397px;top:253px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:433px;top:253px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:469px;top:253px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:505px;top:253px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:1px;top:289px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:37px;top:289px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:73px;top:289px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:109px;top:289px;"></div>
-<div class="bk" style="left:145px;top:289px;"></div>
-<div class="bk" style="left:181px;top:289px;"></div>
-<div class="bk" style="left:217px;top:289px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:253px;top:289px;"></div>
-<div class="bk" style="left:289px;top:289px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:325px;top:289px;"></div>
-<div class="bk" style="left:361px;top:289px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:397px;top:289px;"></div>
-<div class="bk" style="left:433px;top:289px;"></div>
-<div class="bk" style="left:469px;top:289px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:505px;top:289px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:1px;top:325px;border-top:#DEDEDE 36px solid;"><<input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:37px;top:325px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:73px;top:325px;"></div>
-<div class="bk" style="left:109px;top:325px;"></div>
-<div class="bk" style="left:145px;top:325px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:181px;top:325px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:217px;top:325px;"></div>
-<div class="bk" style="left:253px;top:325px;"></div>
-<div class="bk" style="left:289px;top:325px;"></div>
-<div class="bk" style="left:325px;top:325px;"></div>
-<div class="bk" style="left:361px;top:325px;"></div>
-<div class="bk" style="left:397px;top:325px;"></div>
-<div class="bk" style="left:433px;top:325px;"></div>
-<div class="bk" style="left:469px;top:325px;"></div>
-<div class="bk" style="left:505px;top:325px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:1px;top:361px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:37px;top:361px;"></div>
-<div class="bk" style="left:73px;top:361px;"></div>
-<div class="bk" style="left:109px;top:361px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:145px;top:361px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:181px;top:361px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:217px;top:361px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:253px;top:361px;"></div>
-<div class="bk" style="left:289px;top:361px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:325px;top:361px;"></div>
-<div class="bk" style="left:361px;top:361px;"></div>
-<div class="bk" style="left:397px;top:361px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:433px;top:361px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:469px;top:361px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:505px;top:361px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:1px;top:397px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:37px;top:397px;"></div>
-<div class="bk" style="left:73px;top:397px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:109px;top:397px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:145px;top:397px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:181px;top:397px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:217px;top:397px;"></div>
-<div class="bk" style="left:253px;top:397px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:289px;top:397px;"></div>
-<div class="bk" style="left:325px;top:397px;"></div>
-<div class="bk" style="left:361px;top:397px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:397px;top:397px;"></div>
-<div class="bk" style="left:433px;top:397px;"></div>
-<div class="bk" style="left:469px;top:397px;"></div>
-<div class="bk" style="left:505px;top:397px;"></div>
-<div class="bk" style="left:1px;top:433px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:37px;top:433px;"></div>
-<div class="bk" style="left:73px;top:433px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:109px;top:433px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:145px;top:433px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:181px;top:433px;"></div>
-<div class="bk" style="left:217px;top:433px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:253px;top:433px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:289px;top:433px;"></div>
-<div class="bk" style="left:325px;top:433px;"></div>
-<div class="bk" style="left:361px;top:433px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:397px;top:433px;"></div>
-<div class="bk" style="left:433px;top:433px;"></div>
-<div class="bk" style="left:469px;top:433px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:505px;top:433px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:1px;top:469px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:37px;top:469px;"></div>
-<div class="bk" style="left:73px;top:469px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:109px;top:469px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:145px;top:469px;"></div>
-<div class="bk" style="left:181px;top:469px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:217px;top:469px;"></div>
-<div class="bk" style="left:253px;top:469px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:289px;top:469px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:325px;top:469px;"></div>
-<div class="bk" style="left:361px;top:469px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:397px;top:469px;"></div>
-<div class="bk" style="left:433px;top:469px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:469px;top:469px;"></div>
-<div class="bk" style="left:505px;top:469px;"></div>
-<div class="bk" style="left:1px;top:505px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:37px;top:505px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:73px;top:505px;"></div>
-<div class="bk" style="left:109px;top:505px;"></div>
-<div class="bk" style="left:145px;top:505px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:181px;top:505px;"></div>
-<div class="bk" style="left:217px;top:505px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:253px;top:505px;border-top:0;"></div>
-<div class="bk" style="left:289px;top:505px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:325px;top:505px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:361px;top:505px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:397px;top:505px;"></div>
-<div class="bk" style="left:433px;top:505px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:469px;top:505px;"></div>
-<div class="bk" style="left:505px;top:505px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:1px;top:541px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:37px;top:541px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:73px;top:541px;border-top:0;"></div>
-<div class="bk" style="left:109px;top:541px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:145px;top:541px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:181px;top:541px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:217px;top:541px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:253px;top:541px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:289px;top:541px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:325px;top:541px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:361px;top:541px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:397px;top:541px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:433px;top:541px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:469px;top:541px;border-top:0;"></div>
-<div class="bk" style="left:505px;top:541px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:1px;top:577px;"></div>
-<div class="bk" style="left:37px;top:577px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:73px;top:577px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:109px;top:577px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:145px;top:577px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:181px;top:577px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:217px;top:577px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:253px;top:577px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:289px;top:577px;"></div>
-<div class="bk" style="left:325px;top:577px;"></div>
-<div class="bk" style="left:361px;top:577px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:397px;top:577px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:433px;top:577px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:469px;top:577px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
-<div class="bk" style="left:505px;top:577px;"></div>
-<div class="nu" style="left:4px;top:1px;color:000000;text-align:left" >1</div>
-<div class="nu" style="left:40px;top:1px;color:000000;text-align:left" >2</div>
-<div class="nu" style="left:76px;top:1px;color:000000;text-align:left" >3</div>
-<div class="nu" style="left:112px;top:1px;color:000000;text-align:left" >4</div>
-<div class="nu" style="left:184px;top:1px;color:000000;text-align:left" >5</div>
-<div class="nu" style="left:220px;top:1px;color:000000;text-align:left" >6</div>
-<div class="nu" style="left:256px;top:1px;color:000000;text-align:left" >7</div>
-<div class="nu" style="left:292px;top:1px;color:000000;text-align:left" >8</div>
-<div class="nu" style="left:364px;top:1px;color:000000;text-align:left" >9</div>
-<div class="nu" style="left:508px;top:1px;color:000000;text-align:left" >10</div>
-<div class="nu" style="left:4px;top:37px;color:000000;text-align:left" >11</div>
-<div class="nu" style="left:184px;top:37px;color:000000;text-align:left" >12</div>
-<div class="hb" style="left:216px;top:70px;"></div>
-<div class="nu" style="left:4px;top:73px;color:000000;text-align:left" >13</div>
-<div class="vb0" style="left:106px;top:72px;"></div>
-<div class="hb" style="left:72px;top:106px;"></div>
-<div class="vb" style="left:106px;top:72px;"></div>
-<div class="nu" style="left:112px;top:73px;color:000000;text-align:left" >14</div>
-<div class="nu" style="left:148px;top:73px;color:000000;text-align:left" >15</div>
-<div class="vb" style="left:214px;top:72px;"></div>
-<div class="vb0" style="left:214px;top:70px;"></div>
-<div class="hb" style="left:216px;top:70px;"></div>
-<div class="nu" style="left:220px;top:73px;color:000000;text-align:left" >16</div>
-<div class="nu" style="left:400px;top:73px;color:000000;text-align:left" >17</div>
-<div class="nu" style="left:436px;top:73px;color:000000;text-align:left" >18</div>
-<div class="nu" style="left:472px;top:73px;color:000000;text-align:left" >19</div>
-<div class="nu" style="left:4px;top:109px;color:000000;text-align:left" >20</div>
-<div class="vb" style="left:70px;top:108px;"></div>
-<div class="vb0" style="left:70px;top:106px;"></div>
-<div class="hb" style="left:72px;top:106px;"></div>
-<div class="nu" style="left:76px;top:109px;color:000000;text-align:left" >21</div>
-<div class="nu" style="left:364px;top:109px;color:000000;text-align:left" >22</div>
-<div class="nu" style="left:76px;top:145px;color:000000;text-align:left" >23</div>
-<div class="nu" style="left:328px;top:145px;color:000000;text-align:left" >24</div>
-<div class="nu" style="left:4px;top:181px;color:000000;text-align:left" >25</div>
-<div class="nu" style="left:40px;top:181px;color:000000;text-align:left" >26</div>
-<div class="nu" style="left:184px;top:181px;color:000000;text-align:left" >27</div>
-<div class="nu" style="left:328px;top:181px;color:000000;text-align:left" >28</div>
-<div class="nu" style="left:4px;top:217px;color:000000;text-align:left" >29</div>
-<div class="nu" style="left:436px;top:217px;color:000000;text-align:left" >30</div>
-<div class="nu" style="left:508px;top:217px;color:000000;text-align:left" >31</div>
-<div class="nu" style="left:4px;top:253px;color:000000;text-align:left" >32</div>
-<div class="hb" style="left:36px;top:286px;"></div>
-<div class="nu" style="left:76px;top:253px;color:000000;text-align:left" >33</div>
-<div class="nu" style="left:400px;top:253px;color:000000;text-align:left" >34</div>
-<div class="nu" style="left:472px;top:253px;color:000000;text-align:left" >35</div>
-<div class="nu" style="left:4px;top:289px;color:000000;text-align:left" >36</div>
-<div class="hb" style="left:36px;top:286px;"></div>
-<div class="nu" style="left:40px;top:289px;color:000000;text-align:left" >37</div>
-<div class="nu" style="left:472px;top:289px;color:000000;text-align:left" >38</div>
-<div class="nu" style="left:4px;top:325px;color:000000;text-align:left" >39</div>
-<div class="nu" style="left:148px;top:325px;color:000000;text-align:left" >40</div>
-<div class="nu" style="left:184px;top:325px;color:000000;text-align:left" >41</div>
-<div class="nu" style="left:112px;top:361px;color:000000;text-align:left" >42</div>
-<div class="nu" style="left:400px;top:361px;color:000000;text-align:left" >43</div>
-<div class="nu" style="left:76px;top:397px;color:000000;text-align:left" >44</div>
-<div class="nu" style="left:256px;top:397px;color:000000;text-align:left" >45</div>
-<div class="nu" style="left:364px;top:397px;color:000000;text-align:left" >46</div>
-<div class="nu" style="left:76px;top:433px;color:000000;text-align:left" >47</div>
-<div class="nu" style="left:220px;top:433px;color:000000;text-align:left" >48</div>
-<div class="nu" style="left:472px;top:433px;color:000000;text-align:left" >49</div>
-<div class="nu" style="left:76px;top:469px;color:000000;text-align:left" >50</div>
-<div class="nu" style="left:256px;top:469px;color:000000;text-align:left" >51</div>
-<div class="nu" style="left:292px;top:469px;color:000000;text-align:left" >52</div>
-<div class="nu" style="left:436px;top:469px;color:000000;text-align:left" >53</div>
-<div class="nu" style="left:4px;top:505px;color:000000;text-align:left" >54</div>
-<div class="nu" style="left:40px;top:505px;color:000000;text-align:left" >55</div>
-<div class="nu" style="left:148px;top:505px;color:000000;text-align:left" >56</div>
-<div class="nu" style="left:220px;top:505px;color:000000;text-align:left" >57</div>
-<div class="nu" style="left:292px;top:505px;color:000000;text-align:left" >58</div>
-<div class="hb" style="left:324px;top:538px;"></div>
-<div class="hb" style="left:360px;top:538px;"></div>
-<div class="nu" style="left:508px;top:505px;color:000000;text-align:left" >59</div>
-<div class="nu" style="left:4px;top:541px;color:000000;text-align:left" >60</div>
-<div class="nu" style="left:112px;top:541px;color:000000;text-align:left" >61</div>
-<div class="vb" style="left:178px;top:540px;"></div>
-<div class="vb" style="left:178px;top:540px;"></div>
-<div class="nu" style="left:184px;top:541px;color:000000;text-align:left" >62</div>
-<div class="nu" style="left:256px;top:541px;color:000000;text-align:left" >63</div>
-<div class="vb" style="left:322px;top:540px;"></div>
-<div class="vb0" style="left:322px;top:538px;"></div>
-<div class="hb" style="left:324px;top:538px;"></div>
-<div class="nu" style="left:328px;top:541px;color:000000;text-align:left" >64</div>
-<div class="hb" style="left:360px;top:574px;"></div>
-<div class="hb" style="left:360px;top:538px;"></div>
-<div class="hb" style="left:396px;top:574px;"></div>
-<div class="nu" style="left:40px;top:577px;color:000000;text-align:left" >65</div>
-<div class="hb" style="left:360px;top:574px;"></div>
-<div class="nu" style="left:364px;top:577px;color:000000;text-align:left" >66</div>
-<div class="hb" style="left:396px;top:574px;"></div>
-<div class="hr" style="left:0px;top:0px;width:325px;"></div>
-<div class="hr" style="left:360px;top:0px;width:180px;"></div>
-<div class="hr" style="left:0px;top:36px;width:540px;"></div>
-<div class="hr" style="left:0px;top:72px;width:540px;"></div>
-<div class="hr" style="left:0px;top:108px;width:540px;"></div>
-<div class="hr" style="left:0px;top:144px;width:540px;"></div>
-<div class="hr" style="left:0px;top:180px;width:540px;"></div>
-<div class="hr" style="left:0px;top:216px;width:540px;"></div>
-<div class="hr" style="left:0px;top:252px;width:540px;"></div>
-<div class="hr" style="left:0px;top:288px;width:540px;"></div>
-<div class="hr" style="left:0px;top:324px;width:540px;"></div>
-<div class="hr" style="left:0px;top:360px;width:540px;"></div>
-<div class="hr" style="left:0px;top:396px;width:540px;"></div>
-<div class="hr" style="left:0px;top:432px;width:540px;"></div>
-<div class="hr" style="left:0px;top:468px;width:540px;"></div>
-<div class="hr" style="left:0px;top:504px;width:540px;"></div>
-<div class="hr" style="left:0px;top:540px;width:540px;"></div>
-<div class="hr" style="left:0px;top:576px;width:540px;"></div>
-<div class="hr" style="left:0px;top:612px;width:540px;"></div>
-<div class="vr" style="left:0px;top:0px;height:613px;"></div>
-<div class="vr" style="left:36px;top:0px;height:613px;"></div>
-<div class="vr" style="left:72px;top:0px;height:613px;"></div>
-<div class="vr" style="left:108px;top:0px;height:613px;"></div>
-<div class="vr" style="left:144px;top:0px;height:613px;"></div>
-<div class="vr" style="left:180px;top:0px;height:613px;"></div>
-<div class="vr" style="left:216px;top:0px;height:613px;"></div>
-<div class="vr" style="left:252px;top:0px;height:613px;"></div>
-<div class="vr" style="left:288px;top:0px;height:613px;"></div>
-<div class="vr" style="left:324px;top:0px;height:613px;"></div>
-<div class="vr" style="left:360px;top:0px;height:613px;"></div>
-<div class="vr" style="left:396px;top:0px;height:613px;"></div>
-<div class="vr" style="left:432px;top:0px;height:613px;"></div>
-<div class="vr" style="left:468px;top:0px;height:613px;"></div>
-<div class="vr" style="left:504px;top:0px;height:613px;"></div>
-<div class="vr" style="left:540px;top:0px;height:613px;"></div>
+<div id="grid" style="border-width:0px;top:0px;left:0px;width:540px;height:613px;position:absolute;">
+<div class="bk" data-x='0' data-y='0' style="left:1px;top:1px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='1' data-y='0' style="left:37px;top:1px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='2' data-y='0' style="left:73px;top:1px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='3' data-y='0' style="left:109px;top:1px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='4' data-y='0' style="left:145px;top:1px;"></div>
+<div class="bk" data-x='5' data-y='0' style="left:181px;top:1px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='6' data-y='0' style="left:217px;top:1px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='7' data-y='0' style="left:253px;top:1px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='8' data-y='0' style="left:289px;top:1px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='9' data-y='0' style="left:325px;top:1px;border-top:0;"></div>
+<div class="bk" data-x='10' data-y='0' style="left:361px;top:1px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='11' data-y='0' style="left:397px;top:1px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='12' data-y='0' style="left:433px;top:1px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='13' data-y='0' style="left:469px;top:1px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='14' data-y='0' style="left:505px;top:1px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='0' data-y='1' style="left:1px;top:37px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='1' data-y='1' style="left:37px;top:37px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='2' data-y='1' style="left:73px;top:37px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='3' data-y='1' style="left:109px;top:37px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='4' data-y='1' style="left:145px;top:37px;"></div>
+<div class="bk" data-x='5' data-y='1' style="left:181px;top:37px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='6' data-y='1' style="left:217px;top:37px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='7' data-y='1' style="left:253px;top:37px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='8' data-y='1' style="left:289px;top:37px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='9' data-y='1' style="left:325px;top:37px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='10' data-y='1' style="left:361px;top:37px;"></div>
+<div class="bk" data-x='11' data-y='1' style="left:397px;top:37px;"></div>
+<div class="bk" data-x='12' data-y='1' style="left:433px;top:37px;"></div>
+<div class="bk" data-x='13' data-y='1' style="left:469px;top:37px;"></div>
+<div class="bk" data-x='14' data-y='1' style="left:505px;top:37px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='0' data-y='2' style="left:1px;top:73px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='1' data-y='2' style="left:37px;top:73px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='2' data-y='2' style="left:73px;top:73px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='3' data-y='2' style="left:109px;top:73px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='4' data-y='2' style="left:145px;top:73px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='5' data-y='2' style="left:181px;top:73px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='6' data-y='2' style="left:217px;top:73px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='7' data-y='2' style="left:253px;top:73px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='8' data-y='2' style="left:289px;top:73px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='9' data-y='2' style="left:325px;top:73px;"></div>
+<div class="bk" data-x='10' data-y='2' style="left:361px;top:73px;"></div>
+<div class="bk" data-x='11' data-y='2' style="left:397px;top:73px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='12' data-y='2' style="left:433px;top:73px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='13' data-y='2' style="left:469px;top:73px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='14' data-y='2' style="left:505px;top:73px;"></div>
+<div class="bk" data-x='0' data-y='3' style="left:1px;top:109px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='1' data-y='3' style="left:37px;top:109px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='2' data-y='3' style="left:73px;top:109px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='3' data-y='3' style="left:109px;top:109px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='4' data-y='3' style="left:145px;top:109px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='5' data-y='3' style="left:181px;top:109px;"></div>
+<div class="bk" data-x='6' data-y='3' style="left:217px;top:109px;"></div>
+<div class="bk" data-x='7' data-y='3' style="left:253px;top:109px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='8' data-y='3' style="left:289px;top:109px;"></div>
+<div class="bk" data-x='9' data-y='3' style="left:325px;top:109px;"></div>
+<div class="bk" data-x='10' data-y='3' style="left:361px;top:109px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='11' data-y='3' style="left:397px;top:109px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='12' data-y='3' style="left:433px;top:109px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='13' data-y='3' style="left:469px;top:109px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='14' data-y='3' style="left:505px;top:109px;"></div>
+<div class="bk" data-x='0' data-y='4' style="left:1px;top:145px;"></div>
+<div class="bk" data-x='1' data-y='4' style="left:37px;top:145px;"></div>
+<div class="bk" data-x='2' data-y='4' style="left:73px;top:145px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='3' data-y='4' style="left:109px;top:145px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='4' data-y='4' style="left:145px;top:145px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='5' data-y='4' style="left:181px;top:145px;"></div>
+<div class="bk" data-x='6' data-y='4' style="left:217px;top:145px;"></div>
+<div class="bk" data-x='7' data-y='4' style="left:253px;top:145px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='8' data-y='4' style="left:289px;top:145px;"></div>
+<div class="bk" data-x='9' data-y='4' style="left:325px;top:145px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='10' data-y='4' style="left:361px;top:145px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='11' data-y='4' style="left:397px;top:145px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='12' data-y='4' style="left:433px;top:145px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='13' data-y='4' style="left:469px;top:145px;"></div>
+<div class="bk" data-x='14' data-y='4' style="left:505px;top:145px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='0' data-y='5' style="left:1px;top:181px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='1' data-y='5' style="left:37px;top:181px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='2' data-y='5' style="left:73px;top:181px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='3' data-y='5' style="left:109px;top:181px;"></div>
+<div class="bk" data-x='4' data-y='5' style="left:145px;top:181px;"></div>
+<div class="bk" data-x='5' data-y='5' style="left:181px;top:181px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='6' data-y='5' style="left:217px;top:181px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='7' data-y='5' style="left:253px;top:181px;"></div>
+<div class="bk" data-x='8' data-y='5' style="left:289px;top:181px;"></div>
+<div class="bk" data-x='9' data-y='5' style="left:325px;top:181px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='10' data-y='5' style="left:361px;top:181px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='11' data-y='5' style="left:397px;top:181px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='12' data-y='5' style="left:433px;top:181px;"></div>
+<div class="bk" data-x='13' data-y='5' style="left:469px;top:181px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='14' data-y='5' style="left:505px;top:181px;"></div>
+<div class="bk" data-x='0' data-y='6' style="left:1px;top:217px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='1' data-y='6' style="left:37px;top:217px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='2' data-y='6' style="left:73px;top:217px;border-top:0;"></div>
+<div class="bk" data-x='3' data-y='6' style="left:109px;top:217px;"></div>
+<div class="bk" data-x='4' data-y='6' style="left:145px;top:217px;"></div>
+<div class="bk" data-x='5' data-y='6' style="left:181px;top:217px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='6' data-y='6' style="left:217px;top:217px;"></div>
+<div class="bk" data-x='7' data-y='6' style="left:253px;top:217px;"></div>
+<div class="bk" data-x='8' data-y='6' style="left:289px;top:217px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='9' data-y='6' style="left:325px;top:217px;"></div>
+<div class="bk" data-x='10' data-y='6' style="left:361px;top:217px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='11' data-y='6' style="left:397px;top:217px;"></div>
+<div class="bk" data-x='12' data-y='6' style="left:433px;top:217px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='13' data-y='6' style="left:469px;top:217px;"></div>
+<div class="bk" data-x='14' data-y='6' style="left:505px;top:217px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='0' data-y='7' style="left:1px;top:253px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='1' data-y='7' style="left:37px;top:253px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='2' data-y='7' style="left:73px;top:253px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='3' data-y='7' style="left:109px;top:253px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='4' data-y='7' style="left:145px;top:253px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='5' data-y='7' style="left:181px;top:253px;"></div>
+<div class="bk" data-x='6' data-y='7' style="left:217px;top:253px;"></div>
+<div class="bk" data-x='7' data-y='7' style="left:253px;top:253px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='8' data-y='7' style="left:289px;top:253px;"></div>
+<div class="bk" data-x='9' data-y='7' style="left:325px;top:253px;"></div>
+<div class="bk" data-x='10' data-y='7' style="left:361px;top:253px;"></div>
+<div class="bk" data-x='11' data-y='7' style="left:397px;top:253px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='12' data-y='7' style="left:433px;top:253px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='13' data-y='7' style="left:469px;top:253px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='14' data-y='7' style="left:505px;top:253px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='0' data-y='8' style="left:1px;top:289px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='1' data-y='8' style="left:37px;top:289px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='2' data-y='8' style="left:73px;top:289px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='3' data-y='8' style="left:109px;top:289px;"></div>
+<div class="bk" data-x='4' data-y='8' style="left:145px;top:289px;"></div>
+<div class="bk" data-x='5' data-y='8' style="left:181px;top:289px;"></div>
+<div class="bk" data-x='6' data-y='8' style="left:217px;top:289px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='7' data-y='8' style="left:253px;top:289px;"></div>
+<div class="bk" data-x='8' data-y='8' style="left:289px;top:289px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='9' data-y='8' style="left:325px;top:289px;"></div>
+<div class="bk" data-x='10' data-y='8' style="left:361px;top:289px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='11' data-y='8' style="left:397px;top:289px;"></div>
+<div class="bk" data-x='12' data-y='8' style="left:433px;top:289px;"></div>
+<div class="bk" data-x='13' data-y='8' style="left:469px;top:289px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='14' data-y='8' style="left:505px;top:289px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='0' data-y='9' style="left:1px;top:325px;border-top:#DEDEDE 36px solid;"><<input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='1' data-y='9' style="left:37px;top:325px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='2' data-y='9' style="left:73px;top:325px;"></div>
+<div class="bk" data-x='3' data-y='9' style="left:109px;top:325px;"></div>
+<div class="bk" data-x='4' data-y='9' style="left:145px;top:325px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='5' data-y='9' style="left:181px;top:325px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='6' data-y='9' style="left:217px;top:325px;"></div>
+<div class="bk" data-x='7' data-y='9' style="left:253px;top:325px;"></div>
+<div class="bk" data-x='8' data-y='9' style="left:289px;top:325px;"></div>
+<div class="bk" data-x='9' data-y='9' style="left:325px;top:325px;"></div>
+<div class="bk" data-x='10' data-y='9' style="left:361px;top:325px;"></div>
+<div class="bk" data-x='11' data-y='9' style="left:397px;top:325px;"></div>
+<div class="bk" data-x='12' data-y='9' style="left:433px;top:325px;"></div>
+<div class="bk" data-x='13' data-y='9' style="left:469px;top:325px;"></div>
+<div class="bk" data-x='14' data-y='9' style="left:505px;top:325px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='0' data-y='10' style="left:1px;top:361px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='1' data-y='10' style="left:37px;top:361px;"></div>
+<div class="bk" data-x='2' data-y='10' style="left:73px;top:361px;"></div>
+<div class="bk" data-x='3' data-y='10' style="left:109px;top:361px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='4' data-y='10' style="left:145px;top:361px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='5' data-y='10' style="left:181px;top:361px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='6' data-y='10' style="left:217px;top:361px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='7' data-y='10' style="left:253px;top:361px;"></div>
+<div class="bk" data-x='8' data-y='10' style="left:289px;top:361px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='9' data-y='10' style="left:325px;top:361px;"></div>
+<div class="bk" data-x='10' data-y='10' style="left:361px;top:361px;"></div>
+<div class="bk" data-x='11' data-y='10' style="left:397px;top:361px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='12' data-y='10' style="left:433px;top:361px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='13' data-y='10' style="left:469px;top:361px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='14' data-y='10' style="left:505px;top:361px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='0' data-y='11' style="left:1px;top:397px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='1' data-y='11' style="left:37px;top:397px;"></div>
+<div class="bk" data-x='2' data-y='11' style="left:73px;top:397px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='3' data-y='11' style="left:109px;top:397px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='4' data-y='11' style="left:145px;top:397px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='5' data-y='11' style="left:181px;top:397px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='6' data-y='11' style="left:217px;top:397px;"></div>
+<div class="bk" data-x='7' data-y='11' style="left:253px;top:397px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='8' data-y='11' style="left:289px;top:397px;"></div>
+<div class="bk" data-x='9' data-y='11' style="left:325px;top:397px;"></div>
+<div class="bk" data-x='10' data-y='11' style="left:361px;top:397px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='11' data-y='11' style="left:397px;top:397px;"></div>
+<div class="bk" data-x='12' data-y='11' style="left:433px;top:397px;"></div>
+<div class="bk" data-x='13' data-y='11' style="left:469px;top:397px;"></div>
+<div class="bk" data-x='14' data-y='11' style="left:505px;top:397px;"></div>
+<div class="bk" data-x='0' data-y='12' style="left:1px;top:433px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='1' data-y='12' style="left:37px;top:433px;"></div>
+<div class="bk" data-x='2' data-y='12' style="left:73px;top:433px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='3' data-y='12' style="left:109px;top:433px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='4' data-y='12' style="left:145px;top:433px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='5' data-y='12' style="left:181px;top:433px;"></div>
+<div class="bk" data-x='6' data-y='12' style="left:217px;top:433px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='7' data-y='12' style="left:253px;top:433px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='8' data-y='12' style="left:289px;top:433px;"></div>
+<div class="bk" data-x='9' data-y='12' style="left:325px;top:433px;"></div>
+<div class="bk" data-x='10' data-y='12' style="left:361px;top:433px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='11' data-y='12' style="left:397px;top:433px;"></div>
+<div class="bk" data-x='12' data-y='12' style="left:433px;top:433px;"></div>
+<div class="bk" data-x='13' data-y='12' style="left:469px;top:433px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='14' data-y='12' style="left:505px;top:433px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='0' data-y='13' style="left:1px;top:469px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='1' data-y='13' style="left:37px;top:469px;"></div>
+<div class="bk" data-x='2' data-y='13' style="left:73px;top:469px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='3' data-y='13' style="left:109px;top:469px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='4' data-y='13' style="left:145px;top:469px;"></div>
+<div class="bk" data-x='5' data-y='13' style="left:181px;top:469px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='6' data-y='13' style="left:217px;top:469px;"></div>
+<div class="bk" data-x='7' data-y='13' style="left:253px;top:469px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='8' data-y='13' style="left:289px;top:469px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='9' data-y='13' style="left:325px;top:469px;"></div>
+<div class="bk" data-x='10' data-y='13' style="left:361px;top:469px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='11' data-y='13' style="left:397px;top:469px;"></div>
+<div class="bk" data-x='12' data-y='13' style="left:433px;top:469px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='13' data-y='13' style="left:469px;top:469px;"></div>
+<div class="bk" data-x='14' data-y='13' style="left:505px;top:469px;"></div>
+<div class="bk" data-x='0' data-y='14' style="left:1px;top:505px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='1' data-y='14' style="left:37px;top:505px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='2' data-y='14' style="left:73px;top:505px;"></div>
+<div class="bk" data-x='3' data-y='14' style="left:109px;top:505px;"></div>
+<div class="bk" data-x='4' data-y='14' style="left:145px;top:505px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='5' data-y='14' style="left:181px;top:505px;"></div>
+<div class="bk" data-x='6' data-y='14' style="left:217px;top:505px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='7' data-y='14' style="left:253px;top:505px;border-top:0;"></div>
+<div class="bk" data-x='8' data-y='14' style="left:289px;top:505px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='9' data-y='14' style="left:325px;top:505px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='10' data-y='14' style="left:361px;top:505px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='11' data-y='14' style="left:397px;top:505px;"></div>
+<div class="bk" data-x='12' data-y='14' style="left:433px;top:505px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='13' data-y='14' style="left:469px;top:505px;"></div>
+<div class="bk" data-x='14' data-y='14' style="left:505px;top:505px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='0' data-y='15' style="left:1px;top:541px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='1' data-y='15' style="left:37px;top:541px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='2' data-y='15' style="left:73px;top:541px;border-top:0;"></div>
+<div class="bk" data-x='3' data-y='15' style="left:109px;top:541px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='4' data-y='15' style="left:145px;top:541px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='5' data-y='15' style="left:181px;top:541px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='6' data-y='15' style="left:217px;top:541px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='7' data-y='15' style="left:253px;top:541px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='8' data-y='15' style="left:289px;top:541px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='9' data-y='15' style="left:325px;top:541px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='10' data-y='15' style="left:361px;top:541px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='11' data-y='15' style="left:397px;top:541px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='12' data-y='15' style="left:433px;top:541px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='13' data-y='15' style="left:469px;top:541px;border-top:0;"></div>
+<div class="bk" data-x='14' data-y='15' style="left:505px;top:541px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='0' data-y='16' style="left:1px;top:577px;"></div>
+<div class="bk" data-x='1' data-y='16' style="left:37px;top:577px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='2' data-y='16' style="left:73px;top:577px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='3' data-y='16' style="left:109px;top:577px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='4' data-y='16' style="left:145px;top:577px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='5' data-y='16' style="left:181px;top:577px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='6' data-y='16' style="left:217px;top:577px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='7' data-y='16' style="left:253px;top:577px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='8' data-y='16' style="left:289px;top:577px;"></div>
+<div class="bk" data-x='9' data-y='16' style="left:325px;top:577px;"></div>
+<div class="bk" data-x='10' data-y='16' style="left:361px;top:577px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='11' data-y='16' style="left:397px;top:577px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='12' data-y='16' style="left:433px;top:577px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='13' data-y='16' style="left:469px;top:577px;border-top:#DEDEDE 36px solid;"><input type="text" minlength="1" maxlength="1" size="1"></div>
+<div class="bk" data-x='14' data-y='16' style="left:505px;top:577px;"></div>
+<div class="nu" data-x='0' data-y='0' data-hint='1' style="left:4px;top:1px;color:000000;text-align:left" >1</div>
+<div class="nu" data-x='1' data-y='0' data-hint='2' style="left:40px;top:1px;color:000000;text-align:left" >2</div>
+<div class="nu" data-x='2' data-y='0' data-hint='3' style="left:76px;top:1px;color:000000;text-align:left" >3</div>
+<div class="nu" data-x='3' data-y='0' data-hint='4' style="left:112px;top:1px;color:000000;text-align:left" >4</div>
+<div class="nu" data-x='5' data-y='0' data-hint='5' style="left:184px;top:1px;color:000000;text-align:left" >5</div>
+<div class="nu" data-x='6' data-y='0' data-hint='6' style="left:220px;top:1px;color:000000;text-align:left" >6</div>
+<div class="nu" data-x='7' data-y='0' data-hint='7' style="left:256px;top:1px;color:000000;text-align:left" >7</div>
+<div class="nu" data-x='8' data-y='0' data-hint='8' style="left:292px;top:1px;color:000000;text-align:left" >8</div>
+<div class="nu" data-x='10' data-y='0' data-hint='9' style="left:364px;top:1px;color:000000;text-align:left" >9</div>
+<div class="nu" data-x='14' data-y='0' data-hint='10' style="left:508px;top:1px;color:000000;text-align:left" >10</div>
+<div class="nu" data-x='0' data-y='1' data-hint='11' style="left:4px;top:37px;color:000000;text-align:left" >11</div>
+<div class="nu" data-x='5' data-y='1' data-hint='12' style="left:184px;top:37px;color:000000;text-align:left" >12</div>
+<div class="hb" data-x='5' data-y='1' style="left:216px;top:70px;"></div>
+<div class="nu" data-x='0' data-y='2' data-hint='13' style="left:4px;top:73px;color:000000;text-align:left" >13</div>
+<div class="vb0" data-x='2' data-y='1' style="left:106px;top:72px;"></div>
+<div class="hb" data-x='1' data-y='2' style="left:72px;top:106px;"></div>
+<div class="vb" data-x='2' data-y='1' style="left:106px;top:72px;"></div>
+<div class="nu" data-x='3' data-y='2' data-hint='14' style="left:112px;top:73px;color:000000;text-align:left" >14</div>
+<div class="nu" data-x='4' data-y='2' data-hint='15' style="left:148px;top:73px;color:000000;text-align:left" >15</div>
+<div class="vb" data-x='5' data-y='1' style="left:214px;top:72px;"></div>
+<div class="vb0" data-x='5' data-y='1' style="left:214px;top:70px;"></div>
+<div class="hb" data-x='5' data-y='1' style="left:216px;top:70px;"></div>
+<div class="nu" data-x='6' data-y='2' data-hint='16' style="left:220px;top:73px;color:000000;text-align:left" >16</div>
+<div class="nu" data-x='11' data-y='2' data-hint='17' style="left:400px;top:73px;color:000000;text-align:left" >17</div>
+<div class="nu" data-x='12' data-y='2' data-hint='18' style="left:436px;top:73px;color:000000;text-align:left" >18</div>
+<div class="nu" data-x='13' data-y='2' data-hint='19' style="left:472px;top:73px;color:000000;text-align:left" >19</div>
+<div class="nu" data-x='0' data-y='3' data-hint='20' style="left:4px;top:109px;color:000000;text-align:left" >20</div>
+<div class="vb" data-x='1' data-y='2' style="left:70px;top:108px;"></div>
+<div class="vb0" data-x='1' data-y='2' style="left:70px;top:106px;"></div>
+<div class="hb" data-x='1' data-y='2' style="left:72px;top:106px;"></div>
+<div class="nu" data-x='2' data-y='3' data-hint='21' style="left:76px;top:109px;color:000000;text-align:left" >21</div>
+<div class="nu" data-x='10' data-y='3' data-hint='22' style="left:364px;top:109px;color:000000;text-align:left" >22</div>
+<div class="nu" data-x='2' data-y='4' data-hint='23' style="left:76px;top:145px;color:000000;text-align:left" >23</div>
+<div class="nu" data-x='9' data-y='4' data-hint='24' style="left:328px;top:145px;color:000000;text-align:left" >24</div>
+<div class="nu" data-x='0' data-y='5' data-hint='25' style="left:4px;top:181px;color:000000;text-align:left" >25</div>
+<div class="nu" data-x='1' data-y='5' data-hint='26' style="left:40px;top:181px;color:000000;text-align:left" >26</div>
+<div class="nu" data-x='5' data-y='5' data-hint='27' style="left:184px;top:181px;color:000000;text-align:left" >27</div>
+<div class="nu" data-x='9' data-y='5' data-hint='28' style="left:328px;top:181px;color:000000;text-align:left" >28</div>
+<div class="nu" data-x='0' data-y='6' data-hint='29' style="left:4px;top:217px;color:000000;text-align:left" >29</div>
+<div class="nu" data-x='12' data-y='6' data-hint='30' style="left:436px;top:217px;color:000000;text-align:left" >30</div>
+<div class="nu" data-x='14' data-y='6' data-hint='31' style="left:508px;top:217px;color:000000;text-align:left" >31</div>
+<div class="nu" data-x='0' data-y='7' data-hint='32' style="left:4px;top:253px;color:000000;text-align:left" >32</div>
+<div class="hb" data-x='0' data-y='7' style="left:36px;top:286px;"></div>
+<div class="nu" data-x='2' data-y='7' data-hint='33' style="left:76px;top:253px;color:000000;text-align:left" >33</div>
+<div class="nu" data-x='11' data-y='7' data-hint='34' style="left:400px;top:253px;color:000000;text-align:left" >34</div>
+<div class="nu" data-x='13' data-y='7' data-hint='35' style="left:472px;top:253px;color:000000;text-align:left" >35</div>
+<div class="nu" data-x='0' data-y='8' data-hint='36' style="left:4px;top:289px;color:000000;text-align:left" >36</div>
+<div class="hb" data-x='0' data-y='7' style="left:36px;top:286px;"></div>
+<div class="nu" data-x='1' data-y='8' data-hint='37' style="left:40px;top:289px;color:000000;text-align:left" >37</div>
+<div class="nu" data-x='13' data-y='8' data-hint='38' style="left:472px;top:289px;color:000000;text-align:left" >38</div>
+<div class="nu" data-x='0' data-y='9' data-hint='39' style="left:4px;top:325px;color:000000;text-align:left" >39</div>
+<div class="nu" data-x='4' data-y='9' data-hint='40' style="left:148px;top:325px;color:000000;text-align:left" >40</div>
+<div class="nu" data-x='5' data-y='9' data-hint='41' style="left:184px;top:325px;color:000000;text-align:left" >41</div>
+<div class="nu" data-x='3' data-y='10' data-hint='42' style="left:112px;top:361px;color:000000;text-align:left" >42</div>
+<div class="nu" data-x='11' data-y='10' data-hint='43' style="left:400px;top:361px;color:000000;text-align:left" >43</div>
+<div class="nu" data-x='2' data-y='11' data-hint='44' style="left:76px;top:397px;color:000000;text-align:left" >44</div>
+<div class="nu" data-x='7' data-y='11' data-hint='45' style="left:256px;top:397px;color:000000;text-align:left" >45</div>
+<div class="nu" data-x='10' data-y='11' data-hint='46' style="left:364px;top:397px;color:000000;text-align:left" >46</div>
+<div class="nu" data-x='2' data-y='12' data-hint='47' style="left:76px;top:433px;color:000000;text-align:left" >47</div>
+<div class="nu" data-x='6' data-y='12' data-hint='48' style="left:220px;top:433px;color:000000;text-align:left" >48</div>
+<div class="nu" data-x='13' data-y='12' data-hint='49' style="left:472px;top:433px;color:000000;text-align:left" >49</div>
+<div class="nu" data-x='2' data-y='13' data-hint='50' style="left:76px;top:469px;color:000000;text-align:left" >50</div>
+<div class="nu" data-x='7' data-y='13' data-hint='51' style="left:256px;top:469px;color:000000;text-align:left" >51</div>
+<div class="nu" data-x='8' data-y='13' data-hint='52' style="left:292px;top:469px;color:000000;text-align:left" >52</div>
+<div class="nu" data-x='12' data-y='13' data-hint='53' style="left:436px;top:469px;color:000000;text-align:left" >53</div>
+<div class="nu" data-x='0' data-y='14' data-hint='54' style="left:4px;top:505px;color:000000;text-align:left" >54</div>
+<div class="nu" data-x='1' data-y='14' data-hint='55' style="left:40px;top:505px;color:000000;text-align:left" >55</div>
+<div class="nu" data-x='4' data-y='14' data-hint='56' style="left:148px;top:505px;color:000000;text-align:left" >56</div>
+<div class="nu" data-x='6' data-y='14' data-hint='57' style="left:220px;top:505px;color:000000;text-align:left" >57</div>
+<div class="nu" data-x='8' data-y='14' data-hint='58' style="left:292px;top:505px;color:000000;text-align:left" >58</div>
+<div class="hb" data-x='8' data-y='14' style="left:324px;top:538px;"></div>
+<div class="hb" data-x='9' data-y='14' style="left:360px;top:538px;"></div>
+<div class="nu" data-x='14' data-y='14' data-hint='59' style="left:508px;top:505px;color:000000;text-align:left" >59</div>
+<div class="nu" data-x='0' data-y='15' data-hint='60' style="left:4px;top:541px;color:000000;text-align:left" >60</div>
+<div class="nu" data-x='3' data-y='15' data-hint='61' style="left:112px;top:541px;color:000000;text-align:left" >61</div>
+<div class="vb" data-x='4' data-y='14' style="left:178px;top:540px;"></div>
+<div class="vb" data-x='4' data-y='14' style="left:178px;top:540px;"></div>
+<div class="nu" data-x='5' data-y='15' data-hint='62' style="left:184px;top:541px;color:000000;text-align:left" >62</div>
+<div class="nu" data-x='7' data-y='15' data-hint='63' style="left:256px;top:541px;color:000000;text-align:left" >63</div>
+<div class="vb" data-x='8' data-y='14' style="left:322px;top:540px;"></div>
+<div class="vb0" data-x='8' data-y='14' style="left:322px;top:538px;"></div>
+<div class="hb" data-x='8' data-y='14' style="left:324px;top:538px;"></div>
+<div class="nu" data-x='9' data-y='15' data-hint='64' style="left:328px;top:541px;color:000000;text-align:left" >64</div>
+<div class="hb" data-x='9' data-y='15' style="left:360px;top:574px;"></div>
+<div class="hb" data-x='9' data-y='14' style="left:360px;top:538px;"></div>
+<div class="hb" data-x='10' data-y='15' style="left:396px;top:574px;"></div>
+<div class="nu" data-x='1' data-y='16' data-hint='65' style="left:40px;top:577px;color:000000;text-align:left" >65</div>
+<div class="hb" data-x='9' data-y='15' style="left:360px;top:574px;"></div>
+<div class="nu" data-x='10' data-y='16' data-hint='66' style="left:364px;top:577px;color:000000;text-align:left" >66</div>
+<div class="hb" data-x='10' data-y='15' style="left:396px;top:574px;"></div>
+<div class="hr" data-x='0' data-y='0' style="left:0px;top:0px;width:325px;"></div>
+<div class="hr" data-x='9' data-y='0' style="left:360px;top:0px;width:180px;"></div>
+<div class="hr" data-x='0' data-y='0' style="left:0px;top:36px;width:540px;"></div>
+<div class="hr" data-x='0' data-y='1' style="left:0px;top:72px;width:540px;"></div>
+<div class="hr" data-x='0' data-y='2' style="left:0px;top:108px;width:540px;"></div>
+<div class="hr" data-x='0' data-y='3' style="left:0px;top:144px;width:540px;"></div>
+<div class="hr" data-x='0' data-y='4' style="left:0px;top:180px;width:540px;"></div>
+<div class="hr" data-x='0' data-y='5' style="left:0px;top:216px;width:540px;"></div>
+<div class="hr" data-x='0' data-y='6' style="left:0px;top:252px;width:540px;"></div>
+<div class="hr" data-x='0' data-y='7' style="left:0px;top:288px;width:540px;"></div>
+<div class="hr" data-x='0' data-y='8' style="left:0px;top:324px;width:540px;"></div>
+<div class="hr" data-x='0' data-y='9' style="left:0px;top:360px;width:540px;"></div>
+<div class="hr" data-x='0' data-y='10' style="left:0px;top:396px;width:540px;"></div>
+<div class="hr" data-x='0' data-y='11' style="left:0px;top:432px;width:540px;"></div>
+<div class="hr" data-x='0' data-y='12' style="left:0px;top:468px;width:540px;"></div>
+<div class="hr" data-x='0' data-y='13' style="left:0px;top:504px;width:540px;"></div>
+<div class="hr" data-x='0' data-y='14' style="left:0px;top:540px;width:540px;"></div>
+<div class="hr" data-x='0' data-y='15' style="left:0px;top:576px;width:540px;"></div>
+<div class="hr" data-x='0' data-y='16' style="left:0px;top:612px;width:540px;"></div>
+<div class="vr" data-x='0' data-y='0' style="left:0px;top:0px;height:613px;"></div>
+<div class="vr" data-x='0' data-y='0' style="left:36px;top:0px;height:613px;"></div>
+<div class="vr" data-x='1' data-y='0' style="left:72px;top:0px;height:613px;"></div>
+<div class="vr" data-x='2' data-y='0' style="left:108px;top:0px;height:613px;"></div>
+<div class="vr" data-x='3' data-y='0' style="left:144px;top:0px;height:613px;"></div>
+<div class="vr" data-x='4' data-y='0' style="left:180px;top:0px;height:613px;"></div>
+<div class="vr" data-x='5' data-y='0' style="left:216px;top:0px;height:613px;"></div>
+<div class="vr" data-x='6' data-y='0' style="left:252px;top:0px;height:613px;"></div>
+<div class="vr" data-x='7' data-y='0' style="left:288px;top:0px;height:613px;"></div>
+<div class="vr" data-x='8' data-y='0' style="left:324px;top:0px;height:613px;"></div>
+<div class="vr" data-x='9' data-y='0' style="left:360px;top:0px;height:613px;"></div>
+<div class="vr" data-x='10' data-y='0' style="left:396px;top:0px;height:613px;"></div>
+<div class="vr" data-x='11' data-y='0' style="left:432px;top:0px;height:613px;"></div>
+<div class="vr" data-x='12' data-y='0' style="left:468px;top:0px;height:613px;"></div>
+<div class="vr" data-x='13' data-y='0' style="left:504px;top:0px;height:613px;"></div>
+<div class="vr" data-x='14' data-y='0' style="left:540px;top:0px;height:613px;"></div>
 </div></div><br />
 <audio title="jeenio vs lisu - voce devia vir tipo mesmo" controls autoplay loop>
-  <source src="jeenio vs lisu - voce devia vir tipo mesmo.mp3" type="audio/mpeg">
-  Your browser does not support the audio element.
+<source src="jeenio vs lisu - voce devia vir tipo mesmo.mp3" type="audio/mpeg">
+Your browser does not support the audio element.
 </audio>
 </div>
 <div class="hints">
@@ -497,166 +614,166 @@ width:100%;
 </thead>
 <tr>
 <td valign="top"><table>
-<tr><td width="0" align="right" valign="top"><b>1</b></td>
+<tr data-hintdir='across' data-hint='1'><td width="0" align="right" valign="top"><b>1</b>
 <td valign="top">Splipstream Musician&nbsp;(4)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>5</b></td>
+<tr data-hintdir='across' data-hint='5'><td width="0" align="right" valign="top"><b>5</b>
 <td valign="top">Member of Razor 1911&nbsp;(4)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>9</b></td>
+<tr data-hintdir='across' data-hint='9'><td width="0" align="right" valign="top"><b>9</b>
 <td valign="top">Makers of Pong&nbsp;(5)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>11</b></td>
+<tr data-hintdir='across' data-hint='11'><td width="0" align="right" valign="top"><b>11</b>
 <td valign="top">One more reason to prefer Atari&nbsp;(4)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>12</b></td>
+<tr data-hintdir='across' data-hint='12'><td width="0" align="right" valign="top"><b>12</b>
 <td valign="top">__ dynamics&nbsp;(5)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>13</b></td>
+<tr data-hintdir='across' data-hint='13'><td width="0" align="right" valign="top"><b>13</b>
 <td valign="top">Add with carry&nbsp;(3)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>14</b></td>
+<tr data-hintdir='across' data-hint='14'><td width="0" align="right" valign="top"><b>14</b>
 <td valign="top">Transfer A to Y&nbsp;(3)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>16</b></td>
+<tr data-hintdir='across' data-hint='16'><td width="0" align="right" valign="top"><b>16</b>
 <td valign="top">Load Accumulator&nbsp;(3)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>17</b></td>
+<tr data-hintdir='across' data-hint='17'><td width="0" align="right" valign="top"><b>17</b>
 <td valign="top">Acronym of a group that got 5th place at Outline 2009&nbsp;(3)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>20</b></td>
+<tr data-hintdir='across' data-hint='20'><td width="0" align="right" valign="top"><b>20</b>
 <td valign="top">Platform for a DESiRE demo&nbsp;(2)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>21</b></td>
+<tr data-hintdir='across' data-hint='21'><td width="0" align="right" valign="top"><b>21</b>
 <td valign="top">Peter Pack&nbsp;(3)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>22</b></td>
+<tr data-hintdir='across' data-hint='22'><td width="0" align="right" valign="top"><b>22</b>
 <td valign="top">ANSI group&nbsp;(4)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>23</b></td>
+<tr data-hintdir='across' data-hint='23'><td width="0" align="right" valign="top"><b>23</b>
 <td valign="top">logic gate&nbsp;(3)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>24</b></td>
+<tr data-hintdir='across' data-hint='24'><td width="0" align="right" valign="top"><b>24</b>
 <td valign="top">Church of the Spinning Cube member&nbsp;(4)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>25</b></td>
+<tr data-hintdir='across' data-hint='25'><td width="0" align="right" valign="top"><b>25</b>
 <td valign="top">Type of memory&nbsp;(3)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>27</b></td>
+<tr data-hintdir='across' data-hint='27'><td width="0" align="right" valign="top"><b>27</b>
 <td valign="top">Does demos for heater regulator displays&nbsp;(2)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>28</b></td>
+<tr data-hintdir='across' data-hint='28'><td width="0" align="right" valign="top"><b>28</b>
 <td valign="top">Irish scener&nbsp;(3)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>29</b></td>
+<tr data-hintdir='across' data-hint='29'><td width="0" align="right" valign="top"><b>29</b>
 <td valign="top">DC&nbsp;(2)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>32</b></td>
+<tr data-hintdir='across' data-hint='32'><td width="0" align="right" valign="top"><b>32</b>
 <td valign="top">Satori demo&nbsp;(5)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>34</b></td>
+<tr data-hintdir='across' data-hint='34'><td width="0" align="right" valign="top"><b>34</b>
 <td valign="top">Every true cyberpunk hacker has one&nbsp;(4)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>36</b></td>
+<tr data-hintdir='across' data-hint='36'><td width="0" align="right" valign="top"><b>36</b>
 <td valign="top">Push Accumulator&nbsp;(3)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>38</b></td>
+<tr data-hintdir='across' data-hint='38'><td width="0" align="right" valign="top"><b>38</b>
 <td valign="top">Origin of the fromage&nbsp;(2)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>39</b></td>
+<tr data-hintdir='across' data-hint='39'><td width="0" align="right" valign="top"><b>39</b>
 <td valign="top">Origin of the beer&nbsp;(2)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>40</b></td>
+<tr data-hintdir='across' data-hint='40'><td width="0" align="right" valign="top"><b>40</b>
 <td valign="top">Origin of the horse demos&nbsp;(2)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>42</b></td>
+<tr data-hintdir='across' data-hint='42'><td width="0" align="right" valign="top"><b>42</b>
 <td valign="top">A bunch of releases in a disk&nbsp;(4)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>43</b></td>
+<tr data-hintdir='across' data-hint='43'><td width="0" align="right" valign="top"><b>43</b>
 <td valign="top">Slovakian scener&nbsp;(4)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>44</b></td>
+<tr data-hintdir='across' data-hint='44'><td width="0" align="right" valign="top"><b>44</b>
 <td valign="top">Demoscene music group&nbsp;(4)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>47</b></td>
+<tr data-hintdir='across' data-hint='47'><td width="0" align="right" valign="top"><b>47</b>
 <td valign="top">Original Amiga&nbsp;(3)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>48</b></td>
+<tr data-hintdir='across' data-hint='48'><td width="0" align="right" valign="top"><b>48</b>
 <td valign="top">It's in the game&nbsp;(2)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>49</b></td>
+<tr data-hintdir='across' data-hint='49'><td width="0" align="right" valign="top"><b>49</b>
 <td valign="top">British scener with a fetish for executable graphics&nbsp;(2)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>50</b></td>
+<tr data-hintdir='across' data-hint='50'><td width="0" align="right" valign="top"><b>50</b>
 <td valign="top">Russian home computer&nbsp;(2)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>51</b></td>
+<tr data-hintdir='across' data-hint='51'><td width="0" align="right" valign="top"><b>51</b>
 <td valign="top">Shader Showdown legend&nbsp;(2)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>54</b></td>
+<tr data-hintdir='across' data-hint='54'><td width="0" align="right" valign="top"><b>54</b>
 <td valign="top">Creators of sofa world&nbsp;(2)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>58</b></td>
+<tr data-hintdir='across' data-hint='58'><td width="0" align="right" valign="top"><b>58</b>
 <td valign="top">Set Interrupt&nbsp;(3)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>60</b></td>
+<tr data-hintdir='across' data-hint='60'><td width="0" align="right" valign="top"><b>60</b>
 <td valign="top">Danish videogame developer&nbsp;(2)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>61</b></td>
+<tr data-hintdir='across' data-hint='61'><td width="0" align="right" valign="top"><b>61</b>
 <td valign="top">A random Portuguese scener (not Jeenio)&nbsp;(2)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>62</b></td>
+<tr data-hintdir='across' data-hint='62'><td width="0" align="right" valign="top"><b>62</b>
 <td valign="top">Needs more hops&nbsp;(4)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>64</b></td>
+<tr data-hintdir='across' data-hint='64'><td width="0" align="right" valign="top"><b>64</b>
 <td valign="top">Originally branded as the VCS&nbsp;(4)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>65</b></td>
+<tr data-hintdir='across' data-hint='65'><td width="0" align="right" valign="top"><b>65</b>
 <td valign="top">Longest running demoparty in the Netherlands (and also Holland)&nbsp;(7)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>66</b></td>
+<tr data-hintdir='across' data-hint='66'><td width="0" align="right" valign="top"><b>66</b>
 <td valign="top">What year is it?&nbsp;(4)</td></tr>
 </table></td>
 <td>&nbsp;</td>
 <td valign="top"><table>
-<tr><td width="0" align="right" valign="top"><b>1</b></td>
+<tr data-hintdir='down' data-hint='1'><td width="0" align="right" valign="top"><b>1</b>
 <td valign="top">Member of Orb&nbsp;(4)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>2</b></td>
+<tr data-hintdir='down' data-hint='2'><td width="0" align="right" valign="top"><b>2</b>
 <td valign="top">Music protocol and standard&nbsp;(4)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>3</b></td>
+<tr data-hintdir='down' data-hint='3'><td width="0" align="right" valign="top"><b>3</b>
 <td valign="top">Add with carry&nbsp;(3)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>4</b></td>
+<tr data-hintdir='down' data-hint='4'><td width="0" align="right" valign="top"><b>4</b>
 <td valign="top">A French demogroup that is known for sucking&nbsp;(5)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>5</b></td>
+<tr data-hintdir='down' data-hint='5'><td width="0" align="right" valign="top"><b>5</b>
 <td valign="top">Acronym of an Australian group&nbsp;(3)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>6</b></td>
+<tr data-hintdir='down' data-hint='6'><td width="0" align="right" valign="top"><b>6</b>
 <td valign="top">Made in Holland&nbsp;(2)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>7</b></td>
+<tr data-hintdir='down' data-hint='7'><td width="0" align="right" valign="top"><b>7</b>
 <td valign="top">Can you hear me?&nbsp;(5)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>8</b></td>
+<tr data-hintdir='down' data-hint='8'><td width="0" align="right" valign="top"><b>8</b>
 <td valign="top">Custom computer chip that is the heart of the Atari 2600&nbsp;(3)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>10</b></td>
+<tr data-hintdir='down' data-hint='10'><td width="0" align="right" valign="top"><b>10</b>
 <td valign="top">Have you tried turning it off and on again?&nbsp;(2)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>15</b></td>
+<tr data-hintdir='down' data-hint='15'><td width="0" align="right" valign="top"><b>15</b>
 <td valign="top">British video game developer based in Hatton, England.&nbsp;(3)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>17</b></td>
+<tr data-hintdir='down' data-hint='17'><td width="0" align="right" valign="top"><b>17</b>
 <td valign="top">Extremely potent hallucinogen&nbsp;(4)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>18</b></td>
+<tr data-hintdir='down' data-hint='18'><td width="0" align="right" valign="top"><b>18</b>
 <td valign="top">A computer chip without RAM&nbsp;(3)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>19</b></td>
+<tr data-hintdir='down' data-hint='19'><td width="0" align="right" valign="top"><b>19</b>
 <td valign="top">Creators of Party xxx Leben&nbsp;(2)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>21</b></td>
+<tr data-hintdir='down' data-hint='21'><td width="0" align="right" valign="top"><b>21</b>
 <td valign="top">Type of memory&nbsp;(3)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>22</b></td>
+<tr data-hintdir='down' data-hint='22'><td width="0" align="right" valign="top"><b>22</b>
 <td valign="top">Miller&nbsp;(4)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>24</b></td>
+<tr data-hintdir='down' data-hint='24'><td width="0" align="right" valign="top"><b>24</b>
 <td valign="top">"You can't play berzerk at home!"&nbsp;(2)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>25</b></td>
+<tr data-hintdir='down' data-hint='25'><td width="0" align="right" valign="top"><b>25</b>
 <td valign="top">Platform to run Edgedancer&nbsp;(11)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>26</b></td>
+<tr data-hintdir='down' data-hint='26'><td width="0" align="right" valign="top"><b>26</b>
 <td valign="top">Optical Text Recognition software for the Atari ST&nbsp;(3)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>27</b></td>
+<tr data-hintdir='down' data-hint='27'><td width="0" align="right" valign="top"><b>27</b>
 <td valign="top">Atari Series&nbsp;(2)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>30</b></td>
+<tr data-hintdir='down' data-hint='30'><td width="0" align="right" valign="top"><b>30</b>
 <td valign="top">256 octal in hexadecimal&nbsp;(2)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>31</b></td>
+<tr data-hintdir='down' data-hint='31'><td width="0" align="right" valign="top"><b>31</b>
 <td valign="top">2nd place at Outline 2019&nbsp;(5)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>33</b></td>
+<tr data-hintdir='down' data-hint='33'><td width="0" align="right" valign="top"><b>33</b>
 <td valign="top">11011010 binary in hexadecimal&nbsp;(2)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>35</b></td>
+<tr data-hintdir='down' data-hint='35'><td width="0" align="right" valign="top"><b>35</b>
 <td valign="top">207 in hexadecimal&nbsp;(2)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>37</b></td>
+<tr data-hintdir='down' data-hint='37'><td width="0" align="right" valign="top"><b>37</b>
 <td valign="top">Him&nbsp;(2)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>40</b></td>
+<tr data-hintdir='down' data-hint='40'><td width="0" align="right" valign="top"><b>40</b>
 <td valign="top">A form of video game monetization for a season&nbsp;(4)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>41</b></td>
+<tr data-hintdir='down' data-hint='41'><td width="0" align="right" valign="top"><b>41</b>
 <td valign="top">Branch intruction opcode, same name as a cracking group.&nbsp;(3)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>42</b></td>
+<tr data-hintdir='down' data-hint='42'><td width="0" align="right" valign="top"><b>42</b>
 <td valign="top">Bundle everything together&nbsp;(4)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>44</b></td>
+<tr data-hintdir='down' data-hint='44'><td width="0" align="right" valign="top"><b>44</b>
 <td valign="top">Xnitzy &amp;&amp; Xnutzi creator&nbsp;(3)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>45</b></td>
+<tr data-hintdir='down' data-hint='45'><td width="0" align="right" valign="top"><b>45</b>
 <td valign="top">Not NTSC nor SECAM&nbsp;(3)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>46</b></td>
+<tr data-hintdir='down' data-hint='46'><td width="0" align="right" valign="top"><b>46</b>
 <td valign="top">Cable to transfer signal&nbsp;(4)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>52</b></td>
+<tr data-hintdir='down' data-hint='52'><td width="0" align="right" valign="top"><b>52</b>
 <td valign="top">Jump to Subroutine&nbsp;(3)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>53</b></td>
+<tr data-hintdir='down' data-hint='53'><td width="0" align="right" valign="top"><b>53</b>
 <td valign="top">MOS&nbsp;(4)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>55</b></td>
+<tr data-hintdir='down' data-hint='55'><td width="0" align="right" valign="top"><b>55</b>
 <td valign="top">So scary!&nbsp;(3)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>56</b></td>
+<tr data-hintdir='down' data-hint='56'><td width="0" align="right" valign="top"><b>56</b>
 <td valign="top">Arithmetic Shift Left&nbsp;(3)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>57</b></td>
+<tr data-hintdir='down' data-hint='57'><td width="0" align="right" valign="top"><b>57</b>
 <td valign="top">A number&nbsp;(3)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>59</b></td>
+<tr data-hintdir='down' data-hint='59'><td width="0" align="right" valign="top"><b>59</b>
 <td valign="top">DJ Ronny&nbsp;(2)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>61</b></td>
+<tr data-hintdir='down' data-hint='61'><td width="0" align="right" valign="top"><b>61</b>
 <td valign="top">We have superbock and sun!&nbsp;(2)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>62</b></td>
+<tr data-hintdir='down' data-hint='62'><td width="0" align="right" valign="top"><b>62</b>
 <td valign="top">Two ways&nbsp;(2)</td></tr>
-<tr><td width="0" align="right" valign="top"><b>63</b></td>
+<tr data-hintdir='down' data-hint='63'><td width="0" align="right" valign="top"><b>63</b>
 <td valign="top">Estonia&nbsp;(2)</td></tr>
 </table></td>
 </tr>
