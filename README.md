@@ -15,7 +15,7 @@ As seen on TV during Outline 2021: [https://www.youtube.com/watch?v=Qh-FjYpmCio]
 * Added list of registered visitors [https://www.outlinedemoparty.nl/guests.html#Register](https://www.outlinedemoparty.nl/guests.html#Register)
 * Added a bunch of more random Atari trivia references
 * Generated a whole bunch of versions
-* Did [dirty hack on Wizium](https://github.com/psenough/Wizium) to support numbers
+* Did a [dirty hack on Wizium](https://github.com/psenough/Wizium) to support numbers
 * Generated a few more versions
 * Used Qxw to handcraft the final version [https://www.quinapalus.com/qxw.html](https://www.quinapalus.com/qxw.html)
 * Exported to HTML and manually edited the Atari Workbench look & feel + text input
