@@ -1,7 +1,12 @@
-# outline_2021_crosswords
-Outline 2021 Crosswords Challenge!
+# Outline 2021 Crosswords Challenge!
 
 As seen on TV during Outline 2021: [https://www.youtube.com/watch?v=Qh-FjYpmCio](https://www.youtube.com/watch?v=Qh-FjYpmCio)
+
+# Completionists Hall of Fame
+1. kb
+2. gasman
+3. Brittle
+4. okkie
 
 # History
 
@@ -25,9 +30,3 @@ As seen on TV during Outline 2021: [https://www.youtube.com/watch?v=Qh-FjYpmCio]
 * Submitted to Outline 2021
 * ???
 * Profit!
-
-# Hall of Fame of completionists
-1. kb
-2. gasman
-3. Brittle
-4. okkie
